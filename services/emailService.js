@@ -1,0 +1,19 @@
+const nodemailer = require('nodemailer');
+
+exports.enviarEmail = async (to, subject, html) => {
+  // Config simulação/local/teste. Em produção, configure usuário real
+  let transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS
+    }
+  });
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_USER,
+    to,
+    subject,
+    html
+  });
+};

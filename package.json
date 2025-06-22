@@ -1,0 +1,17 @@
+{
+  "name": "sistema-obras-backend",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "body-parser": "*",
+    "cors": "*",
+    "dotenv": "*",
+    "express": "*",
+    "mongoose": "*",
+    "node-fetch": "^2.7.0",
+    "nodemailer": "^7.0.3"
+  }
+}
