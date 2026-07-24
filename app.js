@@ -6,6 +6,8 @@ const cors = require('cors');
 // Rotas
 const obraRoutes = require('./routes/obraRoutes');
 const fiscalizacaoRoutes = require('./routes/fiscalizacaoRoutes');
+const authRoutes = require('./routes/authRoutes');
+const authMiddleware = require('./middleware/auth');
 
 const app = express();
 
@@ -23,8 +25,9 @@ mongoose.connect(process.env.MONGODB_URI, {
 .catch((err) => console.error('Erro ao conectar ao MongoDB:', err));
 
 // Rotas
-app.use('/obras', obraRoutes);
-app.use('/fiscalizacoes', fiscalizacaoRoutes);
+app.use('/fiscalizacoes', authMiddleware, fiscalizacaoRoutes);
+app.use('/obras', authMiddleware, obraRoutes);
+app.use('/auth', authRoutes);
 
 // Rota raiz
 app.get('/', (req, res) => {
