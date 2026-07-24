@@ -1,6 +1,7 @@
 const Obra = require('../models/Obra');
 const Fiscalizacao = require('../models/Fiscalizacao');
 const { enviarEmail } = require('../services/emailService');
+const { gerarRelatorio } = require('../services/reportService');
 
 function formatarData(value) {
   const date = new Date(value);
@@ -88,20 +89,12 @@ exports.enviarDetalhesPorEmail = async (req, res) => {
     if (!obra) return res.status(404).json({ error: "Obra não encontrada" });
 
     // Personalize o corpo do e-mail conforme necessidade
-    await enviarEmail(email, 'Detalhes da Obra', `
-      <h2>${obra.nome}</h2>
-      <p><b>Responsável:</b> ${obra.responsavel}</p>
-      <p><b>Data de início:</b> ${formatarData(obra.dataInicio)}</p>
-      <p><b>Data de término:</b> ${formatarData(obra.dataFim)}</p>
-      <p><b>Descrição da obra:</b> ${obra.descricao}</p>
-      <hr/>
-      <b>Fiscalizações:</b>
-      <ul>
-        ${fiscalizacoes.map(f => `<li>${formatarData(f.data)} - ${f.status} - ${f.observacoes}</li>`).join('')}
-      </ul>
-    `);
+    const relatorio = await gerarRelatorio(obra, fiscalizacoes);
+    await enviarEmail(email, `Relatório da obra: ${obra.nome}`, relatorio.html, [
+      { content: relatorio.pdfBase64, filename: `relatorio-${obra._id}.pdf` }
+    ]);
 
-    res.json({ message: 'E-mail enviado com sucesso (simulado).' });
+    res.json({ message: 'Relatório enviado por e-mail com sucesso.' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
