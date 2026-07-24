@@ -23,11 +23,13 @@ Preencha `.env` sem publicar esse arquivo:
 PORT=5000
 MONGODB_URI=mongodb+srv://usuario:senha@cluster.mongodb.net/sistema-obras?retryWrites=true&w=majority
 JWT_SECRET=uma-chave-secreta-longa-e-aleatoria
-EMAIL_USER=seu_email@gmail.com
-EMAIL_PASS=sua_senha_de_app
+RESEND_API_KEY=re_xxxxxxxxxxxxxxxxx
+EMAIL_FROM=Cadastro de Obras <onboarding@resend.dev>
 ```
 
-`MONGODB_URI`, `JWT_SECRET` e as credenciais de e-mail são segredos. O arquivo `.env` está no `.gitignore` e não deve ser commitado.
+`MONGODB_URI`, `JWT_SECRET`, `RESEND_API_KEY` e as configurações de e-mail são segredos. O arquivo `.env` está no `.gitignore` e não deve ser commitado.
+
+O envio usa o Resend. Crie uma API key e, para enviar a destinatários externos, verifique um domínio no painel do Resend. Durante testes, `onboarding@resend.dev` é limitado às regras da conta Resend.
 
 ## Executar
 
@@ -118,4 +120,3 @@ Modelos principais:
 ## Licença
 
 Projeto acadêmico e didático desenvolvido por Ricardo Lacerda Pereira.
-

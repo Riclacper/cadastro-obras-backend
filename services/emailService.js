@@ -1,22 +1,17 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
 exports.enviarEmail = async (to, subject, html) => {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-    throw new Error('Envio de e-mail não configurado. Defina EMAIL_USER e EMAIL_PASS no .env.');
+  if (!process.env.RESEND_API_KEY || !process.env.EMAIL_FROM) {
+    throw new Error('Envio de e-mail não configurado. Defina RESEND_API_KEY e EMAIL_FROM no .env.');
   }
 
-  let transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS
-    }
-  });
-
-  await transporter.sendMail({
-    from: process.env.EMAIL_USER,
-    to,
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  const { error } = await resend.emails.send({
+    from: process.env.EMAIL_FROM,
+    to: [to],
     subject,
     html
   });
+
+  if (error) throw new Error(error.message || 'O Resend recusou o envio do e-mail.');
 };
