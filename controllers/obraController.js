@@ -71,6 +71,9 @@ exports.listarFiscalizacoesPorObra = async (req, res) => {
 exports.enviarDetalhesPorEmail = async (req, res) => {
   try {
     const { email } = req.body;
+    if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+      return res.status(400).json({ error: 'Informe um e-mail válido.' });
+    }
     const obra = await Obra.findById(req.params.id);
     const fiscalizacoes = await Fiscalizacao.find({ obra: req.params.id });
 
