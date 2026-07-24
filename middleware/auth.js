@@ -15,3 +15,10 @@ module.exports = (req, res, next) => {
     return res.status(401).json({ error: 'Token de autenticação inválido ou expirado' });
   }
 };
+
+module.exports.requireRole = (...roles) => (req, res, next) => {
+  if (!req.user || !roles.includes(req.user.role)) {
+    return res.status(403).json({ error: 'Você não tem permissão para realizar esta operação' });
+  }
+  next();
+};

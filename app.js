@@ -12,7 +12,8 @@ const authMiddleware = require('./middleware/auth');
 const app = express();
 
 // Middlewares
-app.use(cors());
+const allowedOrigins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',').map((origin) => origin.trim()) : '*';
+app.use(cors({ origin: allowedOrigins }));
 app.use(express.json({ limit: '10mb' })); // Aceita imagens base64 grandes
 app.use(express.urlencoded({ extended: true }));
 
@@ -33,6 +34,8 @@ app.use('/auth', authRoutes);
 app.get('/', (req, res) => {
   res.send('API do Sistema de Cadastro de Obras em execução 🚧');
 });
+
+app.get('/health', (req, res) => res.json({ status: 'ok', service: 'cadastro-obras-backend' }));
 
 // Tratamento de erro genérico
 app.use((err, req, res, next) => {

@@ -63,6 +63,13 @@ curl -X POST http://localhost:5000/auth/register \
 
 O primeiro usuário cadastrado recebe o papel `admin`; os seguintes recebem `fiscal`.
 
+### Perfis e permissões
+
+- `admin` (Administrador): cria e edita obras, altera status, exclui obras/fiscalizações, gera relatórios e gerencia usuários.
+- `fiscal` (Fiscal): consulta obras e registra/edita fiscalizações, sem alterar a estrutura das obras ou excluir registros.
+
+Depois do primeiro acesso, o administrador pode criar fiscais pela área **Equipe** do aplicativo ou pela API `POST /auth/users`. O cadastro público fica bloqueado após a criação do primeiro usuário.
+
 ### Entrar
 
 ```bash
@@ -88,6 +95,14 @@ Todas as rotas abaixo, exceto `/auth/register`, `/auth/login` e `/`, exigem aute
 | DELETE | `/obras/:id` | Remove uma obra |
 | GET | `/obras/:id/fiscalizacoes` | Lista fiscalizações da obra |
 | POST | `/obras/:id/email` | Envia detalhes por e-mail |
+
+### Usuários (Administrador)
+
+| Método | Rota | Descrição |
+| --- | --- | --- |
+| GET | `/auth/users` | Lista usuários |
+| POST | `/auth/users` | Cria usuário com papel `admin` ou `fiscal` |
+| PATCH | `/auth/users/:id/role` | Altera o papel do usuário |
 
 ### Fiscalizações
 
@@ -115,7 +130,12 @@ Modelos principais:
 - Nunca publique `.env`, tokens, senhas ou strings do MongoDB.
 - Restrinja o CORS aos domínios necessários em produção.
 - Publique a API atrás de HTTPS.
+- Configure `CORS_ORIGIN` com a origem do frontend publicado; mantenha `*` apenas durante desenvolvimento.
 - O armazenamento de fotos em base64 é adequado apenas para o escopo atual; uma evolução possível é usar armazenamento de objetos.
+
+## Publicação online
+
+O backend está preparado para deploy em serviços como Render, Railway ou Fly.io: use `npm install` no build, `npm start` na execução e configure as variáveis do `.env` no painel do provedor. O endpoint `/health` pode ser usado como health check. Após publicar a API, atualize `EXPO_PUBLIC_API_URL` do frontend para a URL HTTPS pública e gere uma nova build do aplicativo.
 
 ## Licença
 
