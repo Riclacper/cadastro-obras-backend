@@ -18,10 +18,7 @@ app.use(express.json({ limit: '10mb' })); // Aceita imagens base64 grandes
 app.use(express.urlencoded({ extended: true }));
 
 // Conexão MongoDB
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+mongoose.connect(process.env.MONGODB_URI)
 .then(() => console.log('✅ Conectado ao MongoDB'))
 .catch((err) => console.error('Erro ao conectar ao MongoDB:', err));
 
