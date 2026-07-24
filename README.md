@@ -1,141 +1,121 @@
-# 📋 Sistema de Cadastro de Obras
+# Cadastro de Obras — backend
 
-Backend desenvolvido em **Node.js** com **MongoDB** e **Mongoose** para dar suporte a um aplicativo mobile de cadastro e acompanhamento de obras em andamento.
+API REST em Node.js, Express, Mongoose e MongoDB para o aplicativo mobile de cadastro e fiscalização de obras.
 
----
+## Requisitos
 
-## 🚀 Tecnologias Utilizadas
+- Node.js 20.19.4 ou superior recomendado
+- MongoDB Atlas ou uma instância MongoDB acessível
+- Usuário de banco com permissão para a base da aplicação
 
-- Node.js
-- Express.js
-- MongoDB + Mongoose
-- Nodemailer (simulação de envio por email)
-- Estrutura modular (MVC)
-- Upload de imagem via base64 ou URL
-
----
-
-## 📁 Estrutura do Projeto
-
-```
-
-.
-├── app.js
-├── .env.example
-├── models/
-├── controllers/
-├── routes/
-├── services/
-└── uploads/
-
-````
-
----
-
-## 🔧 Instalação e Execução
-
-1. Clone o repositório:
+## Instalação e configuração
 
 ```bash
-git clone https://github.com/riclacper/cadastro-obras.git
-cd sistema-obras
-````
-
-2. Instale as dependências:
-
-```bash
+git clone https://github.com/Riclacper/cadastro-obras-backend.git
+cd cadastro-obras-backend
 npm install
+cp .env.example .env
 ```
 
-3. Crie um arquivo `.env` na raiz com o seguinte conteúdo:
+Preencha `.env` sem publicar esse arquivo:
 
 ```env
 PORT=5000
-MONGODB_URI=mongodb+srv://usuario:senha@host/sistema-obras?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://usuario:senha@cluster.mongodb.net/sistema-obras?retryWrites=true&w=majority
+JWT_SECRET=uma-chave-secreta-longa-e-aleatoria
 EMAIL_USER=seu_email@gmail.com
-EMAIL_PASS=sua_senha_app
+EMAIL_PASS=sua_senha_de_app
 ```
 
-4. Inicie o servidor:
+`MONGODB_URI`, `JWT_SECRET` e as credenciais de e-mail são segredos. O arquivo `.env` está no `.gitignore` e não deve ser commitado.
+
+## Executar
 
 ```bash
-node app.js
+npm start
 ```
 
----
+Por padrão, a API fica disponível em `http://localhost:5000`. Para testar a partir de um celular na mesma rede, use `http://IP_DO_COMPUTADOR:5000`.
 
-## 📌 Endpoints Disponíveis
+O endpoint raiz permite uma verificação rápida:
 
-### 📁 Obras
-
-| Método | Rota                       | Descrição                    |
-| ------ | -------------------------- | ---------------------------- |
-| GET    | `/obras`                   | Listar todas as obras        |
-| GET    | `/obras/:id`               | Buscar obra por ID           |
-| POST   | `/obras`                   | Criar nova obra              |
-| PUT    | `/obras/:id`               | Atualizar obra               |
-| DELETE | `/obras/:id`               | Deletar obra                 |
-| GET    | `/obras/:id/fiscalizacoes` | Listar fiscalizações da obra |
-| POST   | `/obras/:id/email`         | Enviar detalhes por email    |
-
-### 📁 Fiscalizações
-
-| Método | Rota                 | Descrição               |
-| ------ | -------------------- | ----------------------- |
-| GET    | `/fiscalizacoes`     | Listar todas            |
-| GET    | `/fiscalizacoes/:id` | Buscar por ID           |
-| POST   | `/fiscalizacoes`     | Criar nova fiscalização |
-| PUT    | `/fiscalizacoes/:id` | Atualizar fiscalização  |
-| DELETE | `/fiscalizacoes/:id` | Deletar fiscalização    |
-
----
-
-## 🧪 Exemplos de JSON (Payloads)
-
-### ➕ Criar Obra
-
-```json
-{
-  "nome": "Obra Praça Central",
-  "responsavel": "João da Silva",
-  "dataInicio": "2024-06-01",
-  "dataFim": "2024-12-30",
-  "localizacao": {
-    "lat": -8.0557,
-    "long": -34.8813
-  },
-  "descricao": "Construção de praça com pista de cooper",
-  "foto": "https://link-da-imagem.jpg"
-}
+```bash
+curl http://localhost:5000/
 ```
 
-### ➕ Criar Fiscalização
+## Autenticação
 
-```json
-{
-  "data": "2024-07-01",
-  "status": "Em dia",
-  "observacoes": "Execução da base de concreto iniciada.",
-  "localizacao": {
-    "lat": -8.0560,
-    "long": -34.8820
-  },
-  "foto": "data:image/jpeg;base64,...",
-  "obra": "ID_DA_OBRA_AQUI"
-}
+As rotas de obras e fiscalizações exigem um token JWT no cabeçalho:
+
+```http
+Authorization: Bearer SEU_TOKEN
 ```
 
-### 📤 Enviar detalhes da obra por e-mail
+### Criar usuário
 
-```json
-{
-  "email": "destinatario@exemplo.com"
-}
+```bash
+curl -X POST http://localhost:5000/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"nome":"Seu Nome","email":"seu@email.com","senha":"SenhaCom8Caracteres"}'
 ```
 
----
+O primeiro usuário cadastrado recebe o papel `admin`; os seguintes recebem `fiscal`.
 
-## 🧑‍💻 Autor
+### Entrar
 
-Projeto individual desenvolvido por **Ricardo Lacerda Pereira** para fins acadêmicos.
+```bash
+curl -X POST http://localhost:5000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"seu@email.com","senha":"SenhaCom8Caracteres"}'
+```
+
+A resposta contém `token` e os dados públicos do usuário. Não compartilhe o token.
+
+## Endpoints
+
+Todas as rotas abaixo, exceto `/auth/register`, `/auth/login` e `/`, exigem autenticação.
+
+### Obras
+
+| Método | Rota | Descrição |
+| --- | --- | --- |
+| GET | `/obras` | Lista obras |
+| GET | `/obras/:id` | Busca uma obra |
+| POST | `/obras` | Cria uma obra |
+| PUT | `/obras/:id` | Atualiza uma obra |
+| DELETE | `/obras/:id` | Remove uma obra |
+| GET | `/obras/:id/fiscalizacoes` | Lista fiscalizações da obra |
+| POST | `/obras/:id/email` | Envia detalhes por e-mail |
+
+### Fiscalizações
+
+| Método | Rota | Descrição |
+| --- | --- | --- |
+| GET | `/fiscalizacoes` | Lista fiscalizações |
+| GET | `/fiscalizacoes/:id` | Busca uma fiscalização |
+| POST | `/fiscalizacoes` | Cria uma fiscalização |
+| PUT | `/fiscalizacoes/:id` | Atualiza uma fiscalização |
+| DELETE | `/fiscalizacoes/:id` | Remove uma fiscalização |
+
+## Banco de dados
+
+O projeto usa MongoDB com Mongoose. No MongoDB Atlas, crie um usuário em **Database Access**, autorize o IP em **Network Access** e copie a string de conexão para `MONGODB_URI`. As coleções são criadas conforme os primeiros documentos forem inseridos.
+
+Modelos principais:
+
+- `User`: nome, e-mail, hash da senha e papel
+- `Obra`: dados da obra, localização e foto
+- `Fiscalizacao`: dados da fiscalização vinculada a uma obra
+
+## Segurança e produção
+
+- Use uma senha forte e exclusiva para `JWT_SECRET`.
+- Nunca publique `.env`, tokens, senhas ou strings do MongoDB.
+- Restrinja o CORS aos domínios necessários em produção.
+- Publique a API atrás de HTTPS.
+- O armazenamento de fotos em base64 é adequado apenas para o escopo atual; uma evolução possível é usar armazenamento de objetos.
+
+## Licença
+
+Projeto acadêmico e didático desenvolvido por Ricardo Lacerda Pereira.
 
