@@ -12,7 +12,7 @@ function tokenFor(user) {
 
 exports.register = async (req, res) => {
   try {
-    const { nome, email, senha, role } = req.body;
+    const { nome, email, senha } = req.body;
     if (!nome || !email || !senha) {
       return res.status(400).json({ error: 'nome, email e senha são obrigatórios' });
     }
@@ -23,11 +23,12 @@ exports.register = async (req, res) => {
     const exists = await User.exists({ email: normalizedEmail });
     if (exists) return res.status(409).json({ error: 'E-mail já cadastrado' });
 
+    const role = await User.countDocuments() === 0 ? 'admin' : 'fiscal';
     const user = await User.create({
       nome: nome.trim(),
       email: normalizedEmail,
       senhaHash: await bcrypt.hash(senha, 12),
-      role: role === 'admin' ? 'admin' : 'fiscal'
+      role
     });
 
     res.status(201).json({
