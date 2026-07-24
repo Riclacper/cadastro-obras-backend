@@ -2,6 +2,14 @@ const Obra = require('../models/Obra');
 const Fiscalizacao = require('../models/Fiscalizacao');
 const { enviarEmail } = require('../services/emailService');
 
+function formatarData(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value || '');
+  const iso = date.toISOString().slice(0, 10);
+  const [year, month, day] = iso.split('-');
+  return `${day}/${month}/${year}`;
+}
+
 // Criar nova obra
 exports.criarObra = async (req, res) => {
   try {
@@ -83,13 +91,13 @@ exports.enviarDetalhesPorEmail = async (req, res) => {
     await enviarEmail(email, 'Detalhes da Obra', `
       <h2>${obra.nome}</h2>
       <p><b>Responsável:</b> ${obra.responsavel}</p>
-      <p><b>Data Início:</b> ${obra.dataInicio}</p>
-      <p><b>Data Fim:</b> ${obra.dataFim}</p>
-      <p><b>Descrição:</b> ${obra.descricao}</p>
+      <p><b>Data de início:</b> ${formatarData(obra.dataInicio)}</p>
+      <p><b>Data de término:</b> ${formatarData(obra.dataFim)}</p>
+      <p><b>Descrição da obra:</b> ${obra.descricao}</p>
       <hr/>
       <b>Fiscalizações:</b>
       <ul>
-        ${fiscalizacoes.map(f => `<li>${f.data} - ${f.status} - ${f.observacoes}</li>`).join('')}
+        ${fiscalizacoes.map(f => `<li>${formatarData(f.data)} - ${f.status} - ${f.observacoes}</li>`).join('')}
       </ul>
     `);
 
