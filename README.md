@@ -106,7 +106,7 @@ O projeto usa MongoDB com Mongoose. No MongoDB Atlas, crie um usuário em **Data
 Modelos principais:
 
 - `User`: nome, e-mail, hash da senha e papel
-- `Obra`: dados da obra, localização e foto
+- `Obra`: dados da obra, localização, foto e status (`Planejada`, `Em andamento`, `Concluída` ou `Pausada`)
 - `Fiscalizacao`: dados da fiscalização vinculada a uma obra
 
 ## Segurança e produção

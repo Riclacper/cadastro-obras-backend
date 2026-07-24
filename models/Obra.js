@@ -5,6 +5,11 @@ const ObraSchema = new mongoose.Schema({
   responsavel: { type: String, required: true },
   dataInicio: { type: Date, required: true },
   dataFim: { type: Date, required: true },
+  status: {
+    type: String,
+    enum: ['Planejada', 'Em andamento', 'Concluída', 'Pausada'],
+    default: 'Em andamento'
+  },
   localizacao: {
     lat: { type: Number, required: true },
     long: { type: Number, required: true }
