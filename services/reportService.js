@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const LOGO_PATH = path.join(__dirname, '..', 'assets', 'logo.png');
+const EMAIL_LOGO_PATH = path.join(__dirname, '..', 'assets', 'logo-email.png');
 
 const STATUS_COLORS = {
   'Planejada': '#2477A8',
@@ -39,8 +40,8 @@ function dataUriToBuffer(dataUri) {
   return { type: match[1].includes('png') ? 'png' : 'jpg', buffer: Buffer.from(match[2], 'base64') };
 }
 
-function projectLogo() {
-  try { return fs.readFileSync(LOGO_PATH); } catch (_) { return null; }
+function projectLogo(forEmail = false) {
+  try { return fs.readFileSync(forEmail ? EMAIL_LOGO_PATH : LOGO_PATH); } catch (_) { return null; }
 }
 
 function wrapText(text, maxLength = 85) {
@@ -79,15 +80,16 @@ async function gerarPdf(obra, fiscalizacoes) {
   if (logo) {
     try {
       const image = await pdf.embedPng(logo);
-      page.drawImage(image, { x: margin, y: y - 58, width: 58, height: 58 });
+      page.drawImage(image, { x: margin, y: y - 88, width: 88, height: 88 });
     } catch (_) {}
   } else {
     page.drawRectangle({ x: margin, y: y - 42, width: 42, height: 42, color: green });
     page.drawText('CO', { x: margin + 7, y: y - 27, size: 15, font: bold, color: rgb(1, 1, 1) });
   }
-  page.drawText('Cadastro de Obras', { x: margin + 72, y: y - 27, size: 22, font: bold, color: navy });
-  y -= 78;
+  page.drawText('Cadastro de Obras', { x: margin + 104, y: y - 39, size: 22, font: bold, color: navy });
+  y -= 112;
   y = addPdfText(page, bold, 'RELATÓRIO DA OBRA', margin, y, 12, green);
+  y -= 7;
   y = addPdfText(page, bold, obra.nome, margin, y, 25, navy);
   y = addPdfText(page, regular, `Gerado em ${formatarData(new Date())}`, margin, y - 3, 10, rgb(0.42, 0.5, 0.56));
   y -= 10;
@@ -150,7 +152,7 @@ function gerarHtml(obra, fiscalizacoes) {
   const status = obra.status || 'Em andamento';
   const statusColor = STATUS_COLORS[status] || STATUS_COLORS['Em andamento'];
   const location = mapaUrl(obra.localizacao);
-  const logo = projectLogo();
+  const logo = projectLogo(true);
   const logoDataUri = logo ? `data:image/png;base64,${logo.toString('base64')}` : '';
   const fiscalHtml = fiscalizacoes.length
     ? fiscalizacoes.map((fiscalizacao) => {
@@ -170,7 +172,7 @@ function gerarHtml(obra, fiscalizacoes) {
 
   return `<!doctype html><html><body style="margin:0;background:#f4f8f6;font-family:Arial,sans-serif;color:#183b56;">
   <div style="max-width:720px;margin:auto;background:#fff;">
-    <div style="background:#147a50;padding:28px 32px;color:#fff;"><div style="display:flex;align-items:center;gap:14px;">${logoDataUri ? `<img src="${logoDataUri}" alt="Logo Cadastro de Obras" style="width:58px;height:58px;object-fit:contain;background:#fff;border-radius:12px;padding:4px;" />` : '<span style="display:inline-block;background:#fff;color:#147a50;border-radius:12px;padding:10px;font-weight:800;">CO</span>'}<strong style="font-size:24px;">Cadastro de Obras</strong></div><div style="margin-top:22px;font-size:28px;font-weight:800;">${escapeHtml(obra.nome)}</div><span style="display:inline-block;background:${statusColor};padding:7px 12px;border-radius:999px;margin-top:10px;font-weight:700;">${escapeHtml(status)}</span></div>
+    <div style="background:#147a50;padding:28px 32px;color:#fff;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="vertical-align:middle;padding-right:14px;">${logoDataUri ? `<img src="${logoDataUri}" width="76" height="76" alt="Logo Cadastro de Obras" style="display:block;background:#fff;border-radius:12px;padding:4px;" />` : '<span style="display:inline-block;background:#fff;color:#147a50;border-radius:12px;padding:10px;font-weight:800;">CO</span>'}</td><td style="vertical-align:middle;"><strong style="font-size:24px;">Cadastro de Obras</strong></td></tr></table><div style="margin-top:28px;font-size:28px;font-weight:800;">${escapeHtml(obra.nome)}</div><div style="margin-top:12px;"><span style="display:inline-block;background:${statusColor};padding:7px 12px;border-radius:999px;font-weight:700;">${escapeHtml(status)}</span></div></div>
     <div style="padding:28px 32px;">
       <p><strong>Responsável:</strong> ${escapeHtml(obra.responsavel)}</p>
       <p><strong>Período:</strong> ${formatarData(obra.dataInicio)} até ${formatarData(obra.dataFim)}</p>
