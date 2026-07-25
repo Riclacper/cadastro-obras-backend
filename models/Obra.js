@@ -12,7 +12,11 @@ const ObraSchema = new mongoose.Schema({
   },
   localizacao: {
     lat: { type: Number, required: true },
-    long: { type: Number, required: true }
+    long: { type: Number, required: true },
+    endereco: { type: String },
+    precisao: { type: Number },
+    capturadoEm: { type: Date },
+    googleMapsUrl: { type: String }
   },
   descricao: { type: String, required: true },
   foto: { type: String } // base64 ou URL

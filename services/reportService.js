@@ -87,6 +87,9 @@ async function gerarPdf(obra, fiscalizacoes) {
     y -= 8;
     y = addPdfText(page, bold, 'Localização', margin, y, 13, navy);
     y = addPdfText(page, regular, `Latitude: ${obra.localizacao.lat} | Longitude: ${obra.localizacao.long}`, margin, y, 11);
+    if (obra.localizacao.endereco) y = addPdfText(page, regular, `Endereço aproximado: ${obra.localizacao.endereco}`, margin, y, 11);
+    if (obra.localizacao.precisao) y = addPdfText(page, regular, `Precisão: aproximadamente ${obra.localizacao.precisao} m`, margin, y, 10);
+    if (obra.localizacao.capturadoEm) y = addPdfText(page, regular, `Coletada em: ${formatarData(obra.localizacao.capturadoEm)}`, margin, y, 10);
     y = addPdfText(page, regular, mapaUrl(obra.localizacao), margin, y, 9, rgb(0.12, 0.45, 0.65));
   }
   const obraPhoto = dataUriToBuffer(obra.foto);
@@ -106,6 +109,8 @@ async function gerarPdf(obra, fiscalizacoes) {
     y = addPdfText(page, bold, `${formatarData(fiscalizacao.data)} — ${fiscalizacao.status}`, margin, y, 12, green);
     y = addPdfText(page, regular, `Observações: ${fiscalizacao.observacoes}`, margin, y, 10);
     if (fiscalizacao.localizacao) y = addPdfText(page, regular, `GPS: ${fiscalizacao.localizacao.lat}, ${fiscalizacao.localizacao.long}`, margin, y, 9);
+    if (fiscalizacao.localizacao?.endereco) y = addPdfText(page, regular, `Endereço: ${fiscalizacao.localizacao.endereco}`, margin, y, 9);
+    if (fiscalizacao.localizacao?.capturadoEm) y = addPdfText(page, regular, `Coletada em: ${formatarData(fiscalizacao.localizacao.capturadoEm)}`, margin, y, 9);
     y -= 8;
   }
   for (const fiscalizacao of fiscalizacoes) {
@@ -139,7 +144,7 @@ function gerarHtml(obra, fiscalizacoes) {
           <div><strong>${formatarData(fiscalizacao.data)}</strong>
           <span style="background:${color}18;color:${color};padding:5px 9px;border-radius:999px;margin-left:8px;font-weight:700;">${escapeHtml(fiscalizacao.status)}</span></div>
           <p><strong>Observações:</strong> ${escapeHtml(fiscalizacao.observacoes)}</p>
-          ${fiscalizacao.localizacao ? `<p><strong>GPS:</strong> ${fiscalizacao.localizacao.lat}, ${fiscalizacao.localizacao.long}</p>` : ''}
+          ${fiscalizacao.localizacao ? `<p><strong>GPS:</strong> ${fiscalizacao.localizacao.lat}, ${fiscalizacao.localizacao.long}</p>${fiscalizacao.localizacao.endereco ? `<p><strong>Endereço aproximado:</strong> ${escapeHtml(fiscalizacao.localizacao.endereco)}</p>` : ''}${fiscalizacao.localizacao.precisao ? `<p><strong>Precisão:</strong> aproximadamente ${fiscalizacao.localizacao.precisao} m</p>` : ''}${fiscalizacao.localizacao.capturadoEm ? `<p><strong>Coletada em:</strong> ${formatarData(fiscalizacao.localizacao.capturadoEm)}</p>` : ''}` : ''}
           ${photo}
         </div>`;
       }).join('')
@@ -152,7 +157,7 @@ function gerarHtml(obra, fiscalizacoes) {
       <p><strong>Responsável:</strong> ${escapeHtml(obra.responsavel)}</p>
       <p><strong>Período:</strong> ${formatarData(obra.dataInicio)} até ${formatarData(obra.dataFim)}</p>
       <p><strong>Descrição da obra:</strong> ${escapeHtml(obra.descricao)}</p>
-      ${obra.localizacao ? `<p><strong>Localização:</strong> ${obra.localizacao.lat}, ${obra.localizacao.long} — <a href="${location}">Abrir no Google Maps</a></p>` : ''}
+      ${obra.localizacao ? `<p><strong>Localização:</strong> ${obra.localizacao.lat}, ${obra.localizacao.long} — <a href="${location}">Abrir no Google Maps</a></p>${obra.localizacao.endereco ? `<p><strong>Endereço aproximado:</strong> ${escapeHtml(obra.localizacao.endereco)}</p>` : ''}${obra.localizacao.precisao ? `<p><strong>Precisão:</strong> aproximadamente ${obra.localizacao.precisao} m</p>` : ''}${obra.localizacao.capturadoEm ? `<p><strong>Coletada em:</strong> ${formatarData(obra.localizacao.capturadoEm)}</p>` : ''}` : ''}
       ${obra.foto && obra.foto.startsWith('data:image/') ? `<img src="${obra.foto}" alt="Foto da obra" style="width:100%;max-height:300px;object-fit:cover;border-radius:12px;" />` : ''}
       <hr style="border:0;border-top:1px solid #e3ece8;margin:28px 0;">
       <h2>Fiscalizações da obra <span style="color:#718096;font-size:16px;">(${fiscalizacoes.length})</span></h2>

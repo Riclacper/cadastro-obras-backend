@@ -10,7 +10,11 @@ const FiscalizacaoSchema = new mongoose.Schema({
   observacoes: { type: String, required: true },
   localizacao: {
     lat: { type: Number, required: true },
-    long: { type: Number, required: true }
+    long: { type: Number, required: true },
+    endereco: { type: String },
+    precisao: { type: Number },
+    capturadoEm: { type: Date },
+    googleMapsUrl: { type: String }
   },
   foto: { type: String }, // base64 ou URL
   obra: { type: mongoose.Schema.Types.ObjectId, ref: 'Obra', required: true }
