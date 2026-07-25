@@ -1,4 +1,8 @@
 const { PDFDocument, StandardFonts, rgb } = require('pdf-lib');
+const fs = require('fs');
+const path = require('path');
+
+const LOGO_PATH = path.join(__dirname, '..', 'assets', 'logo.png');
 
 const STATUS_COLORS = {
   'Planejada': '#2477A8',
@@ -35,6 +39,10 @@ function dataUriToBuffer(dataUri) {
   return { type: match[1].includes('png') ? 'png' : 'jpg', buffer: Buffer.from(match[2], 'base64') };
 }
 
+function projectLogo() {
+  try { return fs.readFileSync(LOGO_PATH); } catch (_) { return null; }
+}
+
 function wrapText(text, maxLength = 85) {
   const words = String(text ?? '').split(/\s+/);
   const lines = [];
@@ -67,9 +75,17 @@ async function gerarPdf(obra, fiscalizacoes) {
 
   let page = pdf.addPage([pageWidth, 842]);
   let y = 790;
-  page.drawRectangle({ x: margin, y: y - 42, width: 42, height: 42, color: green });
-  page.drawText('CO', { x: margin + 7, y: y - 27, size: 15, font: bold, color: rgb(1, 1, 1) });
-  page.drawText('Cadastro de Obras', { x: margin + 56, y: y - 20, size: 22, font: bold, color: navy });
+  const logo = projectLogo();
+  if (logo) {
+    try {
+      const image = await pdf.embedPng(logo);
+      page.drawImage(image, { x: margin, y: y - 58, width: 58, height: 58 });
+    } catch (_) {}
+  } else {
+    page.drawRectangle({ x: margin, y: y - 42, width: 42, height: 42, color: green });
+    page.drawText('CO', { x: margin + 7, y: y - 27, size: 15, font: bold, color: rgb(1, 1, 1) });
+  }
+  page.drawText('Cadastro de Obras', { x: margin + 72, y: y - 27, size: 22, font: bold, color: navy });
   y -= 78;
   y = addPdfText(page, bold, 'RELATÓRIO DA OBRA', margin, y, 12, green);
   y = addPdfText(page, bold, obra.nome, margin, y, 25, navy);
@@ -134,6 +150,8 @@ function gerarHtml(obra, fiscalizacoes) {
   const status = obra.status || 'Em andamento';
   const statusColor = STATUS_COLORS[status] || STATUS_COLORS['Em andamento'];
   const location = mapaUrl(obra.localizacao);
+  const logo = projectLogo();
+  const logoDataUri = logo ? `data:image/png;base64,${logo.toString('base64')}` : '';
   const fiscalHtml = fiscalizacoes.length
     ? fiscalizacoes.map((fiscalizacao) => {
         const color = STATUS_COLORS[fiscalizacao.status] || '#64748B';
@@ -152,7 +170,7 @@ function gerarHtml(obra, fiscalizacoes) {
 
   return `<!doctype html><html><body style="margin:0;background:#f4f8f6;font-family:Arial,sans-serif;color:#183b56;">
   <div style="max-width:720px;margin:auto;background:#fff;">
-    <div style="background:#147a50;padding:28px 32px;color:#fff;"><span style="display:inline-block;background:#fff;color:#147a50;border-radius:12px;padding:10px;font-weight:800;margin-right:10px;">CO</span><strong style="font-size:24px;">Cadastro de Obras</strong><div style="margin-top:22px;font-size:28px;font-weight:800;">${escapeHtml(obra.nome)}</div><span style="display:inline-block;background:${statusColor};padding:7px 12px;border-radius:999px;margin-top:10px;font-weight:700;">${escapeHtml(status)}</span></div>
+    <div style="background:#147a50;padding:28px 32px;color:#fff;"><div style="display:flex;align-items:center;gap:14px;">${logoDataUri ? `<img src="${logoDataUri}" alt="Logo Cadastro de Obras" style="width:58px;height:58px;object-fit:contain;background:#fff;border-radius:12px;padding:4px;" />` : '<span style="display:inline-block;background:#fff;color:#147a50;border-radius:12px;padding:10px;font-weight:800;">CO</span>'}<strong style="font-size:24px;">Cadastro de Obras</strong></div><div style="margin-top:22px;font-size:28px;font-weight:800;">${escapeHtml(obra.nome)}</div><span style="display:inline-block;background:${statusColor};padding:7px 12px;border-radius:999px;margin-top:10px;font-weight:700;">${escapeHtml(status)}</span></div>
     <div style="padding:28px 32px;">
       <p><strong>Responsável:</strong> ${escapeHtml(obra.responsavel)}</p>
       <p><strong>Período:</strong> ${formatarData(obra.dataInicio)} até ${formatarData(obra.dataFim)}</p>
